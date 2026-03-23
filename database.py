@@ -3,7 +3,7 @@ from sqlalchemy.orm import DeclarativeBase
 
 
 # sqlite local database
-SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./blog.db"
+SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./travelsync.db"
 
 
 # this creates the ACTUAL database

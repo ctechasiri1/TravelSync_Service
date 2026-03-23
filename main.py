@@ -1,8 +1,28 @@
+from contextlib import asynccontextmanager
+from typing import Annotated
+
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
-app = FastAPI()
+from database import Base, engine
 
-@app.get("/")
-def read_root():
-    return {"Message": "Hello World! FastAPI is working."}
+from routers import users
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    await engine.dispose()
+
+
+app = FastAPI(lifespan=lifespan)
+
+
+# app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/media", StaticFiles(directory="media"), name="media")
+
+
+app.include_router(users.router, prefix="/api/users", tags=["users"])
 
