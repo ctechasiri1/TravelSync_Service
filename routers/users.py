@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import models
-from auth import (
+from services.auth import (
     create_access_token, 
     hash_password, 
     verify_password
@@ -59,6 +59,7 @@ async def create_user(user: UserCreate, db: Annotated[AsyncSession, Depends(get_
     await db.refresh(new_user)
 
     return new_user
+
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[AsyncSession, Depends(get_db)]):
