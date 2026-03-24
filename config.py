@@ -1,7 +1,19 @@
+"""
+Environment configuration and secrets management for TravelSync.
+
+Uses Pydantic BaseSettings to securely load environment variables
+from .env file, ensuring sensitive data like JWT secrets are
+never hardcoded into the source code.
+"""
+
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
+    """
+    Validates and stores application-wide settings.
+    Will crash the server on startup if the required .env variables are missing.
+    """
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8"

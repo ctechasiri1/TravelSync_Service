@@ -1,23 +1,20 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
 import models
 from auth import (
-    CurrentUser, 
     create_access_token, 
     hash_password, 
     verify_password
 )
 from config import settings
 from database import get_db
-from image_utils import process_image, delete_image
 from schemas import UserCreate, UserPrivate, UserPublic, UserUpdate, Token
 
 router = APIRouter()
