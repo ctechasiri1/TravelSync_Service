@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 # ==========================================
@@ -65,4 +67,27 @@ class Token(BaseModel):
     token_type: str
 
 
+# ==========================================
+# TRIPS
+# ==========================================
 
+
+class TripBase(BaseModel):
+    """Shared properties used across multiple Trip validation schemas"""
+    title: str = Field(min_length=1, max_length=200)
+    location: str = Field(min_length=1, max_length=200)
+    start_date: datetime
+    end_date: datetime
+    budget: float | None = Field(default=None, ge=0)
+    cover_image: str | None = Field(default=None, max_length=200)
+
+class TripCreate(TripBase):
+    """The Request Body expected from the iOS client to create a new Trip."""
+    pass
+
+class TripPublic(TripBase):
+    """The Response Body sent when viewing a Trip. Excludes sensitive fields."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    author_id: int

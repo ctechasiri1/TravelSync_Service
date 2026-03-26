@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 
 from database import Base, engine
 
-from routers import users
+from routers import trips, users
 
 # ==========================================
 # APPLICATION LIFECYCLE
@@ -54,4 +54,11 @@ app.mount("/media", StaticFiles(directory="media"), name="media")
 # ==========================================
 
 app.include_router(users.router, prefix="/api/users", tags=["users"])
+
+
+app.include_router(
+    trips.router,
+    prefix="/api/trips",  # Optional: Adds a common prefix to all routes in the router
+    tags=["trips"]     # Optional: Groups these routes in the automatic documentation
+)
 
