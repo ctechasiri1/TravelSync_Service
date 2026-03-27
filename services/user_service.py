@@ -20,7 +20,24 @@ class UserService:
     """Service class for user-related operations."""
 
     async def create_user(self, user: UserCreate, db: AsyncSession):
-        
+        """
+        Creates a new user in the database after validating uniqueness.
+
+        This method checks if the provided username or email already exists in the database
+        (case-insensitive). If both are unique, it hashes the user's password and persists
+        the new user record.
+
+        Args:
+            user (UserCreate): The data transfer object containing the new user's details 
+                (username, full_name, email, and raw password).
+            db (AsyncSession): The asynchronous database session.
+
+        Returns:
+            models.User: The newly created and committed user database instance.
+
+        Raises:
+            UserLoginError: If the requested username or email is already registered.
+        """
         query = select(models.User).where(
             or_(
                 func.lower(models.User.username) == user.username.lower(),
@@ -52,6 +69,24 @@ class UserService:
         return new_user
     
     async def login_for_access_token(self, form_data: OAuth2PasswordRequestForm, db: AsyncSession):
+        """
+        Creates a new user in the database after validating uniqueness.
+
+        This method checks if the provided username or email already exists in the database
+        (case-insensitive). If both are unique, it hashes the user's password and persists
+        the new user record.
+
+        Args:
+            user (UserCreate): The data transfer object containing the new user's details 
+                (username, full_name, email, and raw password).
+            db (AsyncSession): The asynchronous database session.
+
+        Returns:
+            models.User: The newly created and committed user database instance.
+
+        Raises:
+            UserLoginError: If the requested username or email is already registered.
+        """
         query = select(models.User).where(func.lower(models.User.email) == form_data.username.lower())
 
         result = await db.execute(query)
