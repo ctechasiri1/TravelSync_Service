@@ -32,6 +32,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
             detail=str(error)
         )
     
+    
 @router.get("/me", response_model=UserPrivate)
 async def get_current_user(current_user: CurrentUser):
     return current_user
