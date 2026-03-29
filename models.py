@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base
 
 # ==========================================
-# DOMAIN: CORE USERS
+# CORE USERS
 # ==========================================
 
 class User(Base):
@@ -43,7 +43,7 @@ class User(Base):
     
 
 # ==========================================
-# DOMAIN: TRAVEL PLANNING
+# TRAVEL PLANNING
 # ==========================================
 
 class Trip(Base):
