@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from datetime import datetime
 
 # ==========================================
 # DOMAIN: USERS
@@ -63,6 +64,5 @@ class Token(BaseModel):
     """Standard OAuth2 JSON response payload containing the JWT."""
     access_token: str
     token_type: str
-
 
 
