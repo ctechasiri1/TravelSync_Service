@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from datetime import datetime
 
 # ==========================================
 # DOMAIN: USERS

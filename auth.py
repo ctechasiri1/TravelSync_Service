@@ -11,12 +11,12 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from pwdlib import PasswordHash
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 import models
 from config import settings
-from database import get_db
+from repositories.user_repository import UserRepository
+from dependencies import get_user_repository
+
 
 # ==========================================
 # CRYPTOGRAPHY & SECURITY SETUP
@@ -87,7 +87,7 @@ def verify_access_token(token: str) -> str | None:
 async def get_current_user(
         # 1. Extracts the Bearer token from the incoming HTTP Authorization header.
         token: Annotated[str, Depends(oauth2_scheme)],
-        db: Annotated[AsyncSession, Depends(get_db)]
+        user_repo: UserRepository = Depends(get_user_repository)
 ) -> models.User:
     """
     FastAPI Dependency that protect secure endpoints.
@@ -110,13 +110,7 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"}
         )
     
-    # 3. Queries the database to ensure the user still exists.
-    result = await db.execute(
-        select(models.User)
-        .where(models.User.id == user_id_int)
-    )
-    
-    user = result.scalars().first()
+    user = user_repo.get_user_from_id(user_id_int)
 
     if user is None:
         raise HTTPException(
