@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database import Base
@@ -60,7 +60,8 @@ class Trip(Base):
     location: Mapped[str] = mapped_column(String(200), nullable=False)
     start_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     end_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    image_file: Mapped[str | None] = mapped_column(String(200), nullable=True, default=None)
+    cover_image: Mapped[str | None] = mapped_column(String(200), nullable=True, default=None)
+    budget: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     # creates a relationship with the USER, a USER can have multiple TRIPS
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
