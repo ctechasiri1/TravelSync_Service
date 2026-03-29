@@ -5,18 +5,13 @@ Handles password hashing, JWT (JSON Web Token) generation, and FastAPI
 dependency injection for securing endpoints
 """
 from datetime import UTC, datetime, timedelta
-from typing import Annotated
 
 import jwt
-from fastapi import Depends, HTTPException, status
+
 from fastapi.security import OAuth2PasswordBearer
 from pwdlib import PasswordHash
 
-import models
 from config import settings
-from repositories.user_repository import UserRepository
-from dependencies import get_user_repository
-
 
 # ==========================================
 # CRYPTOGRAPHY & SECURITY SETUP
@@ -79,51 +74,5 @@ def verify_access_token(token: str) -> str | None:
         return None
     else:
         return payload.get("sub")
-
-# ==========================================
-# DEPENDENCY INJECTION
-# ==========================================
-
-async def get_current_user(
-        # 1. Extracts the Bearer token from the incoming HTTP Authorization header.
-        token: Annotated[str, Depends(oauth2_scheme)],
-        user_repo: UserRepository = Depends(get_user_repository)
-) -> models.User:
-    """
-    FastAPI Dependency that protect secure endpoints.
-    """
-    # 2. Validates the token cryptographically
-    user_id = verify_access_token(token)
-    if user_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
-    
-    try:
-        user_id_int = int(user_id)
-    except (TypeError, ValueError):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
-    
-    user = user_repo.get_user_from_id(user_id_int)
-
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-            headers={"WWW_Authenticate": "Bearer"}
-        )
-    
-    # 4. Returns the full User object to the endpoint
-    return user
-
-
-# Endpoints can simply use 'user: CurrentUser' to securely require authentication.
-CurrentUser = Annotated[models.User, Depends(get_current_user)]
 
 

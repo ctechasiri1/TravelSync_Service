@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from auth import CurrentUser
-from dependencies import get_user_service
-from schemas import UserCreate, UserPrivate, UserPublic, UserUpdate, Token
+
+from dependencies import get_user_service, CurrentUser
+from schemas import UserCreate, UserPrivate, UserPublic, Token
 from services.user_service import UserService
 from exceptions import UserLoginError
 

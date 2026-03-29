@@ -69,9 +69,8 @@ class Token(BaseModel):
 
 
 # ==========================================
-# TRIPS
+# DOMAIN: TRIPS
 # ==========================================
-
 
 class TripBase(BaseModel):
     """Shared properties used across multiple Trip validation schemas"""
@@ -82,13 +81,13 @@ class TripBase(BaseModel):
     budget: float | None = Field(default=None, ge=0)
     cover_image: str | None = Field(default=None, max_length=200)
 
+
 class TripCreate(TripBase):
     """The Request Body expected from the iOS client to create a new Trip."""
     pass
 
-class TripPublic(TripBase):
-    """The Response Body sent when viewing a Trip. Excludes sensitive fields."""
-    model_config = ConfigDict(from_attributes=True)
 
+class TripResponse(BaseModel):
     id: int
-    author_id: int
+    user_id: int
+    author: UserPublic

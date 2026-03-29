@@ -1,27 +1,19 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-import models
-from services.auth import (
-    get_current_user, 
-)
-from config import settings
-from database import get_db
-from schemas import UserCreate, UserPrivate, UserPublic, UserUpdate, Token, TripBase, TripCreate
+from schemas import TripResponse, TripCreate
 from services.trip_service import TripService
+from dependencies import get_trip_service
 
 
 router = APIRouter()
 
-trip_service = TripService()
 
-@router.post("", response_model=TripBase, status_code=status.HTTP_201_CREATED)
-async def create_trip(trip: TripCreate, db: Annotated[AsyncSession, Depends(get_db)], current_user_id: Annotated[int, Depends(get_current_user)]):
-    return await trip_service.create_trip(trip, db, current_user_id)
+@router.post("", response_model=TripResponse, status_code=status.HTTP_201_CREATED)
+async def create_trip(trip: TripCreate, service: TripService = Depends(get_trip_service)):
+    return await service.create_trip(trip)
+
 
 
 
