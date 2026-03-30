@@ -78,7 +78,7 @@ class TripBase(BaseModel):
     location: str = Field(min_length=1, max_length=200)
     start_date: datetime
     end_date: datetime
-    budget: float | None = Field(default=None, ge=0)
+    budget: str | None = Field(default=None)
     cover_image: str | None = Field(default=None, max_length=200)
 
 

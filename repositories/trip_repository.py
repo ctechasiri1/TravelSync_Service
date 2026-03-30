@@ -5,7 +5,7 @@ import models
 
 class TripRepository:
     def __init__(self, db: AsyncSession):
-        self.db
+        self.db = db
 
     async def add_and_save_trip(self, new_trip: models.Trip) -> models.Trip:
         self.db.add(new_trip)
