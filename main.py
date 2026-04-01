@@ -53,8 +53,8 @@ app.mount("/media", StaticFiles(directory="media"), name="media")
 # ROUTER REGISTRATION
 # ==========================================
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/media", StaticFiles(directory="media"), name="media")
 app.include_router(users.router, prefix="/api/users", tags=["users"])
-
-
 app.include_router(trips.router, prefix="/api/trips", tags=["trips"])
 

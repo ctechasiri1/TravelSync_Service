@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import models
+from sqlalchemy import select
 
 
 class TripRepository:
@@ -14,3 +15,8 @@ class TripRepository:
 
         return new_trip
     
+    async def get_trips(self, user_id: int) -> models.Trip:
+        query = select(models.Trip).where(models.Trip.user_id == user_id)
+        result = await self.db.execute(query)
+        return result.scalars().all()
+

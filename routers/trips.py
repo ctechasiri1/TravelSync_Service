@@ -1,9 +1,8 @@
-from typing import Annotated
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, status, Form, File, UploadFile, HTTPException
 
-from schemas import TripResponse, TripCreate
+from schemas import TripPrivateResponse, TripCreate
 from services.trip_service import TripService
 from dependencies import get_trip_service, CurrentUser
 
@@ -11,7 +10,7 @@ from dependencies import get_trip_service, CurrentUser
 router = APIRouter()
 
 
-@router.post("", response_model=TripResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=TripPrivateResponse, status_code=status.HTTP_201_CREATED)
 async def create_trip(
     current_user: CurrentUser,
     title: str = Form(...),
@@ -39,6 +38,12 @@ async def create_trip(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(error)
         )
+    
+
+@router.get("", response_model=list[TripPrivateResponse])
+async def get_trips(current_user: CurrentUser, service: TripService = Depends(get_trip_service)):
+    return await service.get_trips(current_user.id)
+    
 
 
 

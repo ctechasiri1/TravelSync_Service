@@ -66,8 +66,8 @@ class ImageType(Enum):
     Acts as a configuration blueprint to ensure uniformity across the platform.
     """
     # MEMBER = (Directory Path, Width, Height)
-    PROFILE = (Path("media/profile_pics"), 300, 300)
-    COVER = (Path("media/cover_pics"), 1200, 600)
+    PROFILE = (Path("media/profile_images"), 300, 300)
+    COVER = (Path("media/cover_images"), 1200, 600)
 
     def __init__(self, dir_path: Path, width: int, height: int):
         self.dir_path = dir_path

@@ -79,15 +79,16 @@ class TripBase(BaseModel):
     start_date: datetime
     end_date: datetime
     budget: str | None = Field(default=None)
-    cover_image: str | None = Field(default=None, max_length=200)
 
 
 class TripCreate(TripBase):
     """The Request Body expected from the iOS client to create a new Trip."""
-    pass
+    cover_image: str | None = Field(default=None, max_length=200)
 
 
-class TripResponse(BaseModel):
+class TripPrivateResponse(TripBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: int
-    author: UserPublic
+    cover_image_path: str

@@ -31,6 +31,9 @@ class TripService:
         )
 
         return await self.repo.add_and_save_trip(new_trip)
+    
+    async def get_trips(self, user_id: int) -> models.Trip:
+        return await self.repo.get_trips(user_id)
 
 
 

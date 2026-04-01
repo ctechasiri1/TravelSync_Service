@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database import Base
@@ -26,20 +26,20 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String(120), nullable=True)
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(200), nullable=False)
-    image_file: Mapped[str | None] = mapped_column(String(200), nullable=True, default=None)
+    profile_image: Mapped[str | None] = mapped_column(String(200), nullable=True, default=None)
 
     # creates relationship with a TRIP, a USER can have multiple TRIPs
     trips: Mapped[list[Trip]] = relationship(back_populates="author", cascade="all, delete-orphan")
 
     @property
-    def image_path(self) -> str:
+    def profile_image_path(self) -> str:
         """
         Computed property that translates the raw database filename into a
         fully qualified static URL path for the iOS client to fetch
         """
-        if self.image_file:
-            return f"/media/profile_pics/{self.image_file}"
-        return "/static/profile_pics/default.jpg"
+        if self.profile_image:
+            return f"/media/profile_images/{self.profile_image}"
+        return "/static/profile_image/default.jpg"
     
 
 # ==========================================
@@ -73,6 +73,16 @@ class Trip(Base):
     # creates a relationship with a DOCUMENT, a TRIP can have multiple DOCUMENTS
     documents: Mapped[list[Document]] = relationship(back_populates="trip", cascade="all, delete-orphan")
 
+    @property
+    def cover_image_path(self) -> str:
+        """
+        Computed property that translates the raw database filename into a
+        fully qualified static URL path for the iOS client to fetch
+        """
+        if self.cover_image:
+            return f"/media/cover_images/{self.cover_image}"
+        return "/static/cover_image/default.jpg"
+    
 
 class Event(Base):
     """

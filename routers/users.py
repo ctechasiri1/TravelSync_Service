@@ -47,3 +47,4 @@ async def get_user(user_id: int, service: UserService = Depends(get_user_service
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(error)
         )
+    
