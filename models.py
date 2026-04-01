@@ -37,8 +37,10 @@ class User(Base):
         Computed property that translates the raw database filename into a
         fully qualified static URL path for the iOS client to fetch
         """
+        base_url = "http://127.0.0.1:8000"
+
         if self.profile_image:
-            return f"/media/profile_images/{self.profile_image}"
+            return f"{base_url}/media/profile_images/{self.profile_image}"
         return "/static/profile_image/default.jpg"
     
 
@@ -79,8 +81,10 @@ class Trip(Base):
         Computed property that translates the raw database filename into a
         fully qualified static URL path for the iOS client to fetch
         """
+        base_url = "http://127.0.0.1:8000"
+
         if self.cover_image:
-            return f"/media/cover_images/{self.cover_image}"
+            return f"{base_url}/media/cover_images/{self.cover_image}"
         return "/static/cover_image/default.jpg"
     
 
