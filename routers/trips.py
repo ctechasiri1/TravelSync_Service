@@ -1,27 +1,45 @@
 from typing import Annotated
+from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status, Form, File, UploadFile, HTTPException
 
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-import models
-from services.auth import (
-    get_current_user, 
-)
-from config import settings
-from database import get_db
-from schemas import UserCreate, UserPrivate, UserPublic, UserUpdate, Token, TripBase, TripCreate
+from schemas import TripResponse, TripCreate
 from services.trip_service import TripService
+from dependencies import get_trip_service, CurrentUser
 
 
 router = APIRouter()
 
-trip_service = TripService()
 
-@router.post("", response_model=TripBase, status_code=status.HTTP_201_CREATED)
-async def create_trip(trip: TripCreate, db: Annotated[AsyncSession, Depends(get_db)], current_user_id: Annotated[int, Depends(get_current_user)]):
-    return await trip_service.create_trip(trip, db, current_user_id)
+@router.post("", response_model=TripResponse, status_code=status.HTTP_201_CREATED)
+async def create_trip(
+    current_user: CurrentUser,
+    title: str = Form(...),
+    location: str = Form(...),
+    start_date: datetime = Form(...),
+    end_date: datetime = Form(...),
+    budget: str | None = Form(None),
+    cover_image_file: UploadFile | None = File(None),
+    service: TripService = Depends(get_trip_service)
+    ):
+
+    trip_data = TripCreate(
+        title=title,
+        location=location,
+        start_date=start_date,
+        end_date=end_date,
+        budget=budget,
+        cover_image=None
+    )
+
+    try:
+        return await service.create_trip(trip_data, cover_image_file, current_user.id)
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error)
+        )
+
 
 
 

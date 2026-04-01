@@ -56,9 +56,5 @@ app.mount("/media", StaticFiles(directory="media"), name="media")
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 
 
-app.include_router(
-    trips.router,
-    prefix="/api/trips",  # Optional: Adds a common prefix to all routes in the router
-    tags=["trips"]     # Optional: Groups these routes in the automatic documentation
-)
+app.include_router(trips.router, prefix="/api/trips", tags=["trips"])
 

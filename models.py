@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base
 
 # ==========================================
-# DOMAIN: CORE USERS
+# CORE USERS
 # ==========================================
 
 class User(Base):
@@ -43,7 +43,7 @@ class User(Base):
     
 
 # ==========================================
-# DOMAIN: TRAVEL PLANNING
+# TRAVEL PLANNING
 # ==========================================
 
 class Trip(Base):
@@ -61,7 +61,7 @@ class Trip(Base):
     start_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     end_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     cover_image: Mapped[str | None] = mapped_column(String(200), nullable=True, default=None)
-    budget: Mapped[float | None] = mapped_column(Float, nullable=True)
+    budget: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
     # creates a relationship with the USER, a USER can have multiple TRIPS
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
