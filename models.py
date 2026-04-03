@@ -41,7 +41,7 @@ class User(Base):
 
         if self.profile_image:
             return f"{base_url}/media/profile_images/{self.profile_image}"
-        return f"{base_url}/static/profile_image/default.jpg"
+        return f"{base_url}/static/profile_image/default.pgn"
     
 
 # ==========================================
@@ -85,7 +85,7 @@ class Trip(Base):
 
         if self.cover_image:
             return f"{base_url}/media/cover_images/{self.cover_image}"
-        return f"{base_url}/static/cover_image/default.jpg"
+        return f"{base_url}/static/cover_image/default.png"
     
 
 class Event(Base):

@@ -44,7 +44,7 @@ class UserPrivate(BaseModel):
     username: str
     full_name: str
     email: EmailStr
-    image_path: str
+    profile_image: str
 
 
 class UserPublic(BaseModel):
@@ -56,7 +56,7 @@ class UserPublic(BaseModel):
 
     id: int
     username: str
-    image_path: str
+    profile_image: str
 
 # ==========================================
 # DOMAIN: AUTHENTICATION
