@@ -60,4 +60,4 @@ async def update_trip(
     try:
         return await service.update_trip(trip_id, current_user.id, trip_data)
     except TripError as errror:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=errror)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(errror))

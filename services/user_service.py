@@ -16,7 +16,7 @@ class UserService:
     def __init__(self, user_repo: UserRepository):
         self.repo = user_repo
 
-    async def valid_new_user(self, user: UserCreate) -> models.User:
+    async def create_user(self, user: UserCreate) -> models.User:
         existing_user = await self.repo.get_user_from_email_and_username(
             user.email, user.username
         )

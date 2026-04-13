@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from dependencies import CurrentUser, get_user_service
 from exceptions import UserLoginError
-from schemas import Token, UserCreate, UserPrivate, UserPublic
+from schemas import Token, UserCreate, UserPrivate
 from services.user_service import UserService
 
 router = APIRouter()
@@ -16,7 +16,7 @@ async def create_user(
     user: UserCreate, service: UserService = Depends(get_user_service)
 ):
     try:
-        return await service.valid_new_user(user)
+        return await service.create_user(user)
     except UserLoginError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
@@ -32,14 +32,6 @@ async def login_for_access_token(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(error))
 
 
-@router.get("/me", response_model=UserPrivate)
+@router.get("/me", response_model=UserPrivate, status_code=status.HTTP_200_OK)
 async def get_current_user(current_user: CurrentUser):
     return current_user
-
-
-@router.get("{user_id}", response_model=UserPublic)
-async def get_user(user_id: int, service: UserService = Depends(get_user_service)):
-    try:
-        return await service.valid_user(user_id)
-    except UserLoginError as error:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
