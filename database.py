@@ -5,6 +5,7 @@ Initializes the async SQLAlchemy engine and provides the
 dependency injection function required by FastAPI routers to securely
 interact with the database.
 """
+
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
@@ -13,7 +14,7 @@ from sqlalchemy.orm import DeclarativeBase
 # ==========================================
 
 # The local SQLite databse file path
-#(Note: This connection string will change when migrating to PostgreSQL)
+# (Note: This connection string will change when migrating to PostgreSQL)
 SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./travelsync.db"
 
 
@@ -21,15 +22,13 @@ SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./travelsync.db"
 engine = create_async_engine(
     SQLALCHEMY_DATABASE_URL,
     # 'check_same_thread=False' is strictly required for SQLite to work with FastAPI async
-    connect_args={"check_same_thread": False}
+    connect_args={"check_same_thread": False},
 )
 
 
 # A factory pattern that generates temporary, isolated database sessions.
-AsyncSessionLocal = async_sessionmaker (
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False
+AsyncSessionLocal = async_sessionmaker(
+    engine, class_=AsyncSession, expire_on_commit=False
 )
 
 
@@ -38,12 +37,14 @@ class Base(DeclarativeBase):
     The Foundational class that all SQLAlchemy models(User, Trip, etc.) must inherit from.
     Maintains the metadata catalog of all tables and relationships.
     """
+
     pass
 
 
 # ==========================================
 # DEPENDENCY INJECTION
 # ==========================================
+
 
 async def get_db():
     """
@@ -54,5 +55,3 @@ async def get_db():
     """
     async with AsyncSessionLocal() as session:
         yield session
-
-

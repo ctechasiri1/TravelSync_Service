@@ -4,10 +4,10 @@ Authentication, autorization, and cryptographic utilities.
 Handles password hashing, JWT (JSON Web Token) generation, and FastAPI
 dependency injection for securing endpoints
 """
+
 from datetime import UTC, datetime, timedelta
 
 import jwt
-
 from fastapi.security import OAuth2PasswordBearer
 from pwdlib import PasswordHash
 
@@ -33,9 +33,11 @@ def verify_password(plain_password: str, hash_password: str) -> bool:
     """Compares a plaintext login attempt against the stored database hash."""
     return password_hash.verify(plain_password, hash_password)
 
+
 # ==========================================
 # JWT (JSON WEB TOKEN) MANAGEMENT
 # ==========================================
+
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """
@@ -46,13 +48,13 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     if expires_delta:
         expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
+        expire = datetime.now(UTC) + timedelta(
+            minutes=settings.access_token_expire_minutes
+        )
 
     to_encode.update({"exp": expire})
     encode_jwt = jwt.encode(
-        to_encode,
-        settings.secret_key.get_secret_value(),
-        algorithm=settings.algorithm
+        to_encode, settings.secret_key.get_secret_value(), algorithm=settings.algorithm
     )
 
     return encode_jwt
@@ -65,14 +67,12 @@ def verify_access_token(token: str) -> str | None:
     """
     try:
         payload = jwt.decode(
-            token, 
+            token,
             settings.secret_key.get_secret_value(),
-            algorithms = [settings.algorithm],
-            options={"require": ["exp", "sub"]}
+            algorithms=[settings.algorithm],
+            options={"require": ["exp", "sub"]},
         )
     except jwt.InvalidTokenError:
         return None
     else:
         return payload.get("sub")
-
-

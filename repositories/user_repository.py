@@ -1,44 +1,44 @@
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, select, or_
 
 import models
+
 
 class UserRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_user_from_email_and_username(self, email: str, username: str) -> models.User | None:
+    async def get_user_from_email_and_username(
+        self, email: str, username: str
+    ) -> models.User | None:
         query = select(models.User).where(
             or_(
                 func.lower(models.User.username) == username.lower(),
-                func.lower(models.User.email) == email.lower()
+                func.lower(models.User.email) == email.lower(),
             )
         )
 
         result = await self.db.execute(query)
         return result.scalars().first()
-    
 
     async def get_user_from_email(self, email: str) -> models.User | None:
-        query = select(models.User).where(func.lower(models.User.email) == email.lower())
+        query = select(models.User).where(
+            func.lower(models.User.email) == email.lower()
+        )
 
         result = await self.db.execute(query)
 
         return result.scalars().first()
-    
-    
+
     async def get_user_from_id(self, user_id: int) -> models.User | None:
         query = select(models.User).where(models.User.id == user_id)
 
         result = await self.db.execute(query)
 
         return result.scalars().first()
-    
 
     async def add_and_save_user(self, user: models.User) -> models.User:
         self.db.add(user)
         await self.db.commit()
         await self.db.refresh(user)
         return user
-    
-    

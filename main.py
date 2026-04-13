@@ -12,12 +12,12 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from database import Base, engine
-
-from routers import trips, users
+from routers import trips_router, users_router
 
 # ==========================================
 # APPLICATION LIFECYCLE
 # ==========================================
+
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
@@ -55,6 +55,5 @@ app.mount("/media", StaticFiles(directory="media"), name="media")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/media", StaticFiles(directory="media"), name="media")
-app.include_router(users.router, prefix="/api/users", tags=["users"])
-app.include_router(trips.router, prefix="/api/trips", tags=["trips"])
-
+app.include_router(users_router.router, prefix="/api/users", tags=["users"])
+app.include_router(trips_router.router, prefix="/api/trips", tags=["trips"])
