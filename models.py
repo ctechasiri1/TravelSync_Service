@@ -63,7 +63,7 @@ class Trip(Base):
     start_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     end_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     cover_image: Mapped[str | None] = mapped_column(String(200), nullable=True, default=None)
-    budget: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    budget: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # creates a relationship with the USER, a USER can have multiple TRIPS
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
@@ -105,6 +105,37 @@ class Event(Base):
     # creates a relationship with the TRIP, a TRIP can have multiple EVENTS
     trip_id: Mapped[int] = mapped_column(ForeignKey("trips.id"), nullable=False, index=True)
     trip: Mapped[Trip] = relationship(back_populates="events")
+
+
+class Expense(Base):
+    __tablename__ = "expenses"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    amount: Mapped[int] = mapped_column(Integer, nullable=False) 
+    transaction_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    receipt_image: Mapped[str | None] = mapped_column(String(200), nullable=True, default=None)
+    
+    category_id: Mapped[int] = mapped_column(ForeignKey("expense_categories.id"), nullable=False)
+    trip_id: Mapped[int] = mapped_column(ForeignKey("trips.id"), nullable=False, index=True)
+
+    category: Mapped["ExpenseCategory"] = relationship(back_populates="expenses")
+    trip: Mapped[Trip] = relationship(back_populates="events")
+
+    @property
+    def receipt_image_path(self) -> str:
+        base_url = "http://127.0.0.1:8000"
+
+        if self.receipt_image:
+            return f"{base_url}/media/documents/{self.receipt_image}"
+        return None
+
+
+class ExpenseCategory(Base):
+    __tablename__ = "expense_categories"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    key_name: Mapped[str] = mapped_column(String(50), nullable=False)
 
 
 class Document(Base):

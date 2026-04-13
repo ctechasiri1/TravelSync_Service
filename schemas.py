@@ -44,7 +44,7 @@ class UserPrivate(BaseModel):
     username: str
     full_name: str
     email: EmailStr
-    profile_image: str
+    profile_image_path: str
 
 
 class UserPublic(BaseModel):
@@ -56,7 +56,7 @@ class UserPublic(BaseModel):
 
     id: int
     username: str
-    profile_image: str
+    profile_image_path: str
 
 # ==========================================
 # DOMAIN: AUTHENTICATION
@@ -78,7 +78,7 @@ class TripBase(BaseModel):
     location: str = Field(min_length=1, max_length=200)
     start_date: datetime
     end_date: datetime
-    budget: str | None = Field(default=None)
+    budget: int | None = Field(default=None)
 
 
 class TripCreate(TripBase):
@@ -92,3 +92,27 @@ class TripPrivateResponse(TripBase):
     id: int
     user_id: int
     cover_image_path: str
+
+
+# ==========================================
+# DOMAIN: EXPENSE
+# ==========================================
+
+class ExpenseBase(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    amount: int = Field(ge=0)
+    transaction_date: datetime
+    category_id: int 
+
+
+class ExpenseCreate(ExpenseBase):
+    trip_id: int
+    receipt_image_id: str | None = None
+
+
+class ExpensePrivateResponse(ExpenseBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    trip_id: int
+    receipt_image_id: str | None = None
