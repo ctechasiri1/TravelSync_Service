@@ -13,7 +13,7 @@ class TripRepository:
         self, trip_data: TripCreate, cover_image: str | None, user_id: int
     ) -> models.Trip:
         new_trip = models.Trip(
-            **trip_data.model_dump(exclude={"cover_iamge"}),
+            **trip_data.model_dump(exclude={"cover_image"}),
             cover_image=cover_image,
             user_id=user_id,
         )

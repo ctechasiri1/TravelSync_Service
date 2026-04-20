@@ -20,8 +20,10 @@ async def create_trip(
     start_date: datetime = Form(...),
     end_date: datetime = Form(...),
     budget: int | None = Form(None),
+    is_favorite: bool = Form(...),
     cover_image_file: UploadFile | None = File(None),
     service: TripService = Depends(get_trip_service),
+    
 ):
 
     trip_data = TripCreate(
@@ -30,6 +32,7 @@ async def create_trip(
         start_date=start_date,
         end_date=end_date,
         budget=budget,
+        is_favorite=is_favorite,
         cover_image=None,
     )
 

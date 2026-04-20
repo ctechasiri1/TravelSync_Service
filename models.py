@@ -147,7 +147,7 @@ class Expense(Base):
     )
 
     category: Mapped["ExpenseCategory"] = relationship(back_populates="expenses")
-    trip: Mapped[Trip] = relationship(back_populates="events")
+    trip: Mapped[Trip] = relationship(back_populates="expenses")
 
     @property
     def receipt_image_path(self) -> str:
@@ -164,6 +164,7 @@ class ExpenseCategory(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     key_name: Mapped[str] = mapped_column(String(50), nullable=False)
 
+    expenses: Mapped[list["Expense"]] = relationship(back_populates="category")
 
 class Document(Base):
     __tablename__ = "documents"
