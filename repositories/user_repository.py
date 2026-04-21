@@ -8,14 +8,11 @@ class UserRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_user_from_email_and_username(
-        self, email: str, username: str
+    async def get_user_from_username(
+        self, username: str
     ) -> models.User | None:
         query = select(models.User).where(
-            or_(
-                func.lower(models.User.username) == username.lower(),
-                func.lower(models.User.email) == email.lower(),
-            )
+            func.lower(models.User.username) == username.lower(),
         )
 
         result = await self.db.execute(query)

@@ -3,7 +3,7 @@
 # ==========================================
 
 
-class UserLoginError(Exception):
+class UserError(Exception):
     """Raise when a user tries to register with a taken username or email."""
 
     pass

@@ -8,9 +8,20 @@ from auth import oauth2_scheme, verify_access_token
 from database import get_db
 from repositories.trip_repository import TripRepository
 from repositories.user_repository import UserRepository
+from repositories.expense_repository import ExpenseRepository
 from services.local_media_service import LocalMediaService
 from services.trip_service import TripService
 from services.user_service import UserService
+from services.expense_service import ExpenseService
+
+# ==========================================
+# MEDIA INJECTION
+# ==========================================
+
+
+def get_media_service() -> LocalMediaService:
+    return LocalMediaService()
+
 
 # ==========================================
 # USER INJECTION
@@ -23,17 +34,9 @@ def get_user_repository(db: AsyncSession = Depends(get_db)) -> UserRepository:
 
 def get_user_service(
     repo: UserRepository = Depends(get_user_repository),
+    media_service: LocalMediaService = Depends(get_media_service)
 ) -> UserService:
-    return UserService(repo)
-
-
-# ==========================================
-# MEDIA INJECTION
-# ==========================================
-
-
-def get_media_service() -> LocalMediaService:
-    return LocalMediaService()
+    return UserService(repo, media_service)
 
 
 # ==========================================
@@ -50,6 +53,21 @@ def get_trip_service(
     media_service: LocalMediaService = Depends(get_media_service),
 ) -> TripService:
     return TripService(trip_repo=repo, media_service=media_service)
+
+
+# ==========================================
+# EXPENSE INJECTION
+# ==========================================
+
+def get_expense_repository(db: AsyncSession = Depends(get_db)) -> TripRepository:
+    return ExpenseRepository(db)
+
+
+def get_exepense_service(
+    repo: ExpenseRepository = Depends(get_expense_repository),
+    media_service: LocalMediaService = Depends(get_media_service)
+):
+    return ExpenseService
 
 
 # ==========================================

@@ -24,5 +24,7 @@ class Settings(BaseSettings):
 
     max_upload_size_bytes: int = 5 * 1024 * 1024
 
+    base_url: str = "http://127.0.0.1:8000"
+
 
 settings = Settings()

@@ -10,11 +10,11 @@ class TripRepository:
         self.db = db
 
     async def create_trip(
-        self, trip_data: TripCreate, cover_image: str | None, user_id: int
+        self, trip_data: TripCreate, cover_image_data: str | None, user_id: int
     ) -> models.Trip:
         new_trip = models.Trip(
-            **trip_data.model_dump(exclude={"cover_image"}),
-            cover_image=cover_image,
+            **trip_data.model_dump(),
+            cover_image=cover_image_data,
             user_id=user_id,
         )
 
@@ -36,7 +36,11 @@ class TripRepository:
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
-    async def save_strip(self, db_trip: models.Trip) -> models.Trip:
+    async def save_trip(self, db_trip: models.Trip) -> models.Trip:
         await self.db.commit()
         await self.db.refresh(db_trip)
         return db_trip
+
+    async def delete_trip(self, db_trip: models.Trip):
+        await self.db.delete(db_trip)
+        await self.db.commit()

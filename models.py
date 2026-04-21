@@ -6,6 +6,7 @@ from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database import Base
+from config import Settings
 
 # ==========================================
 # CORE USERS
@@ -38,16 +39,14 @@ class User(Base):
     )
 
     @property
-    def profile_image_path(self) -> str:
+    def profile_image_url(self) -> str:
         """
         Computed property that translates the raw database filename into a
         fully qualified static URL path for the iOS client to fetch
         """
-        base_url = "http://127.0.0.1:8000"
-
         if self.profile_image:
-            return f"{base_url}/media/profile_images/{self.profile_image}"
-        return f"{base_url}/static/profile_image/default.png"
+            return f"{Settings.base_url}/media/profile_images/{self.profile_image}"
+        return f"{Settings.base_url}/static/profile_image/default.png"
 
 
 # ==========================================
@@ -78,7 +77,7 @@ class Trip(Base):
 
     # creates a relationship with the USER, a USER can have multiple TRIPS
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"), nullable=False, index=True
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     author: Mapped[User] = relationship(back_populates="trips")
 
@@ -86,24 +85,20 @@ class Trip(Base):
     events: Mapped[list[Event]] = relationship(
         back_populates="trip", cascade="all, delete-orphan"
     )
-    documents: Mapped[list[Document]] = relationship(
-        back_populates="trip", cascade="all, delete-orphan"
-    )
+
     expenses: Mapped[list[Expense]] = relationship(
         back_populates="trip", cascade="all, delete-orphan"
     )
 
     @property
-    def cover_image_path(self) -> str:
+    def cover_image_url(self) -> str:
         """
         Computed property that translates the raw database filename into a
         fully qualified static URL path for the iOS client to fetch
         """
-        base_url = "http://127.0.0.1:8000"
-
         if self.cover_image:
-            return f"{base_url}/media/cover_images/{self.cover_image}"
-        return f"{base_url}/static/cover_image/default.png"
+            return f"{Settings.base_url}/media/cover_images/{self.cover_image}"
+        return f"{Settings.base_url}/static/cover_image/default.png"
 
 
 class Event(Base):
@@ -123,7 +118,7 @@ class Event(Base):
 
     # creates a relationship with the TRIP, a TRIP can have multiple EVENTS
     trip_id: Mapped[int] = mapped_column(
-        ForeignKey("trips.id"), nullable=False, index=True
+        ForeignKey("trips.id", ondelete="CASCADE"), nullable=False, index=True
     )
     trip: Mapped[Trip] = relationship(back_populates="events")
 
@@ -140,21 +135,19 @@ class Expense(Base):
     )
 
     category_id: Mapped[int] = mapped_column(
-        ForeignKey("expense_categories.id"), nullable=False
+        ForeignKey("expense_categories.id", ondelete="RESTRICT"), nullable=False
     )
     trip_id: Mapped[int] = mapped_column(
-        ForeignKey("trips.id"), nullable=False, index=True
+        ForeignKey("trips.id", ondelete="CASCADE"), nullable=False, index=True
     )
 
     category: Mapped["ExpenseCategory"] = relationship(back_populates="expenses")
     trip: Mapped[Trip] = relationship(back_populates="expenses")
 
     @property
-    def receipt_image_path(self) -> str:
-        base_url = "http://127.0.0.1:8000"
-
+    def receipt_image_url(self) -> str | None:
         if self.receipt_image:
-            return f"{base_url}/media/documents/{self.receipt_image}"
+            return f"{Settings.base_url}/media/documents/{self.receipt_image}"
         return None
 
 
@@ -165,16 +158,3 @@ class ExpenseCategory(Base):
     key_name: Mapped[str] = mapped_column(String(50), nullable=False)
 
     expenses: Mapped[list["Expense"]] = relationship(back_populates="category")
-
-class Document(Base):
-    __tablename__ = "documents"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    title: Mapped[str] = mapped_column(String(200), nullable=False)
-    file_url: Mapped[str] = mapped_column(String(500), nullable=False)
-
-    # creates a relationship with the TRIP, a TRIP can have multiple DOCUMENTS
-    trip_id: Mapped[int] = mapped_column(
-        ForeignKey("trips.id"), nullable=False, index=True
-    )
-    trip: Mapped[Trip] = relationship(back_populates="documents")

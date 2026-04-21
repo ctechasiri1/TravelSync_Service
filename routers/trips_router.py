@@ -19,11 +19,10 @@ async def create_trip(
     location: str = Form(...),
     start_date: datetime = Form(...),
     end_date: datetime = Form(...),
-    budget: int | None = Form(None),
-    is_favorite: bool = Form(...),
+    budget: int = Form(...),
+    is_favorite: bool = Form(False),
     cover_image_file: UploadFile | None = File(None),
     service: TripService = Depends(get_trip_service),
-    
 ):
 
     trip_data = TripCreate(
@@ -33,7 +32,6 @@ async def create_trip(
         end_date=end_date,
         budget=budget,
         is_favorite=is_favorite,
-        cover_image=None,
     )
 
     try:
@@ -55,12 +53,28 @@ async def get_trips(
     "/{trip_id}", response_model=TripPrivateResponse, status_code=status.HTTP_200_OK
 )
 async def update_trip(
-    trip_id: int,
-    trip_data: TripUpdate,
     current_user: CurrentUser,
+    trip_id: int,
+    is_favorite: bool | None = Form(None),
+    cover_image_file: UploadFile | None = Form(None),
     service: TripService = Depends(get_trip_service),
 ):
     try:
-        return await service.update_trip(trip_id, current_user.id, trip_data)
-    except TripError as errror:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(errror))
+        return await service.update_trip(
+            )
+    except TripError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
+
+
+@router.delete(
+    "/{trip_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_trip(
+    current_user: CurrentUser,
+    trip_id: int,
+    service: TripService = Depends(get_trip_service)
+):
+    try: 
+        await service.delete_trip(current_user.id, trip_id)
+    except TripError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))

@@ -3,6 +3,18 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 # ==========================================
+# DOMAIN: AUTHENTICATION
+# ==========================================
+
+
+class Token(BaseModel):
+    """Standard OAuth2 JSON response payload containing the JWT."""
+
+    access_token: str
+    token_type: str
+
+
+# ==========================================
 # DOMAIN: USERS
 # ==========================================
 
@@ -30,13 +42,12 @@ class UserUpdate(BaseModel):
     All fields are optional to allow for partial updates from the client.
     """
 
-    full_name: str | None = Field(min_length=1, max_length=200)
-    username: str | None = Field(min_length=1, max_length=50)
-    email: EmailStr | None = Field(min_length=6, max_length=120)
-    password: str | None = Field(min_length=10)
+    full_name: str | None = Field(default=None, min_length=1, max_length=200)
+    username: str | None = Field(default=None, min_length=1, max_length=50)
+    email: EmailStr | None = Field(default=None, min_length=6, max_length=120)
 
 
-class UserPrivate(BaseModel):
+class UserPrivateResponse(BaseModel):
     """
     The secure Response Body sent when a user views their OWN profile.
     All fields are optional to alow for partial updates from the client.
@@ -48,32 +59,7 @@ class UserPrivate(BaseModel):
     username: str
     full_name: str
     email: EmailStr
-    profile_image_path: str
-
-
-class UserPublic(BaseModel):
-    """
-    The secure Response Body sent when viewing ANOTHER user's profile.
-    Strictly limits PII (Personally Identifiable Information) like email.
-    """
-
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    username: str
-    profile_image_path: str
-
-
-# ==========================================
-# DOMAIN: AUTHENTICATION
-# ==========================================
-
-
-class Token(BaseModel):
-    """Standard OAuth2 JSON response payload containing the JWT."""
-
-    access_token: str
-    token_type: str
+    profile_image_url: str
 
 
 # ==========================================
@@ -88,26 +74,18 @@ class TripBase(BaseModel):
     location: str = Field(min_length=1, max_length=200)
     start_date: datetime
     end_date: datetime
-    budget: int | None = Field(default=None)
+    budget: int
     is_favorite: bool
 
 
 class TripCreate(TripBase):
     """The Request Body expected from the iOS client to create a new Trip."""
 
-    cover_image: str | None = Field(default=None, max_length=200)
-
 
 class TripUpdate(BaseModel):
     """Used for PATCH requests. All fields are optional."""
 
-    title: str | None = Field(default=None, min_length=1, max_length=200)
-    location: str | None = Field(min_length=1, max_length=200)
-    start_date: datetime | None = None
-    end_date: datetime | None = None
-    budget: int | None = None
     is_favorite: bool | None = None
-    cover_image: str | None = Field(default=None, max_length=200)
 
 
 class TripPrivateResponse(TripBase):
@@ -115,7 +93,7 @@ class TripPrivateResponse(TripBase):
 
     id: int
     user_id: int
-    cover_image_path: str
+    cover_image_url: str
 
 
 # ==========================================
@@ -132,7 +110,7 @@ class ExpenseBase(BaseModel):
 
 class ExpenseCreate(ExpenseBase):
     trip_id: int
-    receipt_image_id: str | None = None
+    receipt_image_data: str | None = None
 
 
 class ExpensePrivateResponse(ExpenseBase):
@@ -140,4 +118,4 @@ class ExpensePrivateResponse(ExpenseBase):
 
     id: int
     trip_id: int
-    receipt_image_id: str | None = None
+    receipt_image_url: str | None = None
