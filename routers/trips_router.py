@@ -2,10 +2,17 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 
-from dependencies import CurrentUser, get_trip_service
+from dependencies import CurrentUser, get_trip_service, get_exepense_service
 from exceptions import TripError
-from schemas import TripCreate, TripPrivateResponse, TripUpdate
+from schemas import (
+    TripCreate,
+    TripPrivateResponse,
+    TripUpdate,
+    ExpensePrivateResponse,
+    ExpenseCreate,
+)
 from services.trip_service import TripService
+from services.expense_service import ExpenseService
 
 router = APIRouter()
 
@@ -24,7 +31,6 @@ async def create_trip(
     cover_image_file: UploadFile | None = File(None),
     service: TripService = Depends(get_trip_service),
 ):
-
     trip_data = TripCreate(
         title=title,
         location=location,
@@ -59,22 +65,61 @@ async def update_trip(
     cover_image_file: UploadFile | None = Form(None),
     service: TripService = Depends(get_trip_service),
 ):
+    updated_trip = TripUpdate(is_favorite=is_favorite)
+
     try:
         return await service.update_trip(
-            )
+            user_id=current_user.id,
+            trip_id=trip_id,
+            updates=updated_trip,
+            cover_image_file=cover_image_file,
+        )
     except TripError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
 
 
-@router.delete(
-    "/{trip_id}", status_code=status.HTTP_204_NO_CONTENT
-)
+@router.delete("/{trip_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_trip(
     current_user: CurrentUser,
     trip_id: int,
-    service: TripService = Depends(get_trip_service)
+    service: TripService = Depends(get_trip_service),
 ):
-    try: 
+    try:
         await service.delete_trip(current_user.id, trip_id)
+    except TripError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
+
+
+@router.post(
+    "/{trip_id}/expense",
+    response_model=ExpensePrivateResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_expense(
+    current_user: CurrentUser,
+    trip_id: int,
+    title: str = Form(...),
+    amount: int = Form(...),
+    transaction_date: datetime = Form(...),
+    category_id: int = Form(...),
+    receipt_image_file: UploadFile | None = Form(None),
+    trip_service: TripService = Depends(get_trip_service),
+    expense_service: ExpenseService = Depends(get_exepense_service),
+):
+    expense_data = ExpenseCreate(
+        title=title,
+        amount=amount,
+        transaction_date=transaction_date,
+        category_id=category_id,
+        trip_id=trip_id,
+    )
+    try:
+        await trip_service.verify_membership(current_user.id, trip_id)
+
+        return await expense_service.create_expense(
+            trip_id=trip_id,
+            receipt_image_file=receipt_image_file,
+            expense_data=expense_data,
+        )
     except TripError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))

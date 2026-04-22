@@ -31,6 +31,7 @@ class ImageType(Enum):
     # MEMBER = (Directory Path, Width, Height)
     PROFILE = (Path("media/profile_images"), 300, 300)
     COVER = (Path("media/cover_images"), 1200, 600)
+    RECEIPT = (Path("media/receipt"), 500, 500)
 
     def __init__(self, dir_path: Path, width: int, height: int):
         self.dir_path = dir_path

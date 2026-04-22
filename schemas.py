@@ -94,6 +94,7 @@ class TripPrivateResponse(TripBase):
     id: int
     user_id: int
     cover_image_url: str
+    total_spending: int
 
 
 # ==========================================

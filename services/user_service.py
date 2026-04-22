@@ -18,13 +18,12 @@ class UserService:
         self.repo = user_repo
         self.media_service = media_service
 
-
     async def create_user(self, user: UserCreate) -> models.User:
         existing_by_username = await self.repo.get_user_from_username(user.username)
 
         if existing_by_username:
             raise UserError("The username already exists")
-        
+
         existing_by_email = await self.repo.get_user_from_email(user.email)
         if existing_by_email:
             raise UserError("The email already exists")
@@ -43,9 +42,8 @@ class UserService:
 
         if not user:
             raise UserError("User not found.")
-        
+
         return user
-    
 
     async def create_access_token(self, form_data: OAuth2PasswordRequestForm) -> Token:
         existing_user = await self.repo.get_user_from_email(form_data.username)

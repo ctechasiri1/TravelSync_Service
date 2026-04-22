@@ -8,9 +8,7 @@ class UserRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_user_from_username(
-        self, username: str
-    ) -> models.User | None:
+    async def get_user_from_username(self, username: str) -> models.User | None:
         query = select(models.User).where(
             func.lower(models.User.username) == username.lower(),
         )

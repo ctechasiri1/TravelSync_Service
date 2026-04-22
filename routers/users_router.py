@@ -11,7 +11,9 @@ from services.user_service import UserService
 router = APIRouter()
 
 
-@router.post("", response_model=UserPrivateResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=UserPrivateResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_user(
     user: UserCreate, service: UserService = Depends(get_user_service)
 ):
