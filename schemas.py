@@ -111,7 +111,6 @@ class ExpenseBase(BaseModel):
 
 class ExpenseCreate(ExpenseBase):
     trip_id: int
-    receipt_image_data: str | None = None
 
 
 class ExpensePrivateResponse(ExpenseBase):

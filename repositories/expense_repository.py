@@ -27,6 +27,13 @@ class ExpenseRepository:
         )
 
         return result.scalar() or 0
+    
+    async def get_expenses(self, trip_id) -> models.Expense:
+        query = select(models.Expense).where(models.Expense.trip_id == trip_id)
+
+        result = await self.db.execute(query)
+
+        return result.scalars().all()
 
     async def save_expense(self, db_expense: models.Expense):
         await self.db.commit()

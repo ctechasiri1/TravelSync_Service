@@ -13,6 +13,7 @@ from schemas import (
 )
 from services.trip_service import TripService
 from services.expense_service import ExpenseService
+from exceptions import UserError
 
 router = APIRouter()
 
@@ -123,3 +124,23 @@ async def create_expense(
         )
     except TripError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
+
+
+@router.get("/{trip_id}/expense", response_model=list[ExpensePrivateResponse], status_code=status.HTTP_200_OK)
+async def get_expenses(
+    current_user: CurrentUser,
+    trip_id: int, 
+    service: ExpenseService = Depends(get_exepense_service)
+):
+    try:
+        return await service.get_expenses(user_id=current_user.id, trip_id=trip_id)
+    except UserError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
+    
+@router.delete("\{trip_id}\expenses", response_model=ExpensePrivateResponse, status_code=status.HTTP_204_NO_CONTENT)
+async def delete_expense(
+    current_user: CurrentUser,
+    trip_id: int,
+    service: ExpenseService = Depends(get_exepense_service)
+):
+    pass

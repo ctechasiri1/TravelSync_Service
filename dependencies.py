@@ -50,9 +50,10 @@ def get_expense_repository(db: AsyncSession = Depends(get_db)) -> TripRepository
 
 def get_exepense_service(
     repo: ExpenseRepository = Depends(get_expense_repository),
+    user_service: UserService = Depends(get_user_service),
     media_service: LocalMediaService = Depends(get_media_service),
 ):
-    return ExpenseService(repo, media_service)
+    return ExpenseService(repo, user_service, media_service)
 
 
 # ==========================================

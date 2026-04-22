@@ -16,3 +16,12 @@ class UserError(Exception):
 
 class TripError(Exception):
     pass
+
+
+# ==========================================
+# EXPENSE ERROR
+# ==========================================
+
+
+class ExpenseError(Exception):
+    pass

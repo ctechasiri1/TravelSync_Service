@@ -36,5 +36,5 @@ async def login_for_access_token(
 
 @router.get("/me", response_model=UserPrivateResponse, status_code=status.HTTP_200_OK)
 async def get_current_user(current_user: CurrentUser):
-    print(current_user.profile_image_url)  
+    print(current_user.profile_image_url)
     return current_user

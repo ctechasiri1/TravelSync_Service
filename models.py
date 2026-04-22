@@ -130,31 +130,19 @@ class Expense(Base):
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
     transaction_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    category_id: Mapped[int] = mapped_column(Integer, nullable=False)
     receipt_image: Mapped[str | None] = mapped_column(
         String(200), nullable=True, default=None
     )
 
-    category_id: Mapped[int] = mapped_column(
-        ForeignKey("expense_categories.id", ondelete="RESTRICT"), nullable=False
-    )
     trip_id: Mapped[int] = mapped_column(
         ForeignKey("trips.id", ondelete="CASCADE"), nullable=False, index=True
     )
 
-    category: Mapped["ExpenseCategory"] = relationship(back_populates="expenses")
     trip: Mapped[Trip] = relationship(back_populates="expenses")
 
     @property
     def receipt_image_url(self) -> str | None:
         if self.receipt_image:
-            return f"{settings.base_url}/media/documents/{self.receipt_image}"
+            return f"{settings.base_url}/media/receipt_images/{self.receipt_image}"
         return None
-
-
-class ExpenseCategory(Base):
-    __tablename__ = "expense_categories"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    key_name: Mapped[str] = mapped_column(String(50), nullable=False)
-
-    expenses: Mapped[list["Expense"]] = relationship(back_populates="category")
