@@ -9,6 +9,7 @@ class TripRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
+
     async def create_trip(
         self, trip_data: TripCreate, cover_image_data: str | None, user_id: int
     ) -> models.Trip:
@@ -23,10 +24,12 @@ class TripRepository:
         await self.db.refresh(new_trip)
         return new_trip
 
+
     async def get_trips(self, user_id: int) -> models.Trip:
         query = select(models.Trip).where(models.Trip.user_id == user_id)
         result = await self.db.execute(query)
         return list(result.scalars().all())
+
 
     async def get_trip_by_id_and_user(self, user_id: int, trip_id: int) -> models.Trip:
         query = select(models.Trip).where(
@@ -36,10 +39,12 @@ class TripRepository:
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
+
     async def save_trip(self, db_trip: models.Trip) -> models.Trip:
         await self.db.commit()
         await self.db.refresh(db_trip)
         return db_trip
+
 
     async def delete_trip(self, db_trip: models.Trip):
         await self.db.delete(db_trip)

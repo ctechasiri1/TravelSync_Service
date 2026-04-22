@@ -24,7 +24,7 @@ class TripService:
 
     async def create_trip(
         self, trip: TripCreate, cover_image_file: UploadFile | None, user_id: int
-    ) -> models.Trip:
+    ) -> TripPrivateResponse:
         processed_image_name = None
 
         if cover_image_file:
@@ -32,10 +32,23 @@ class TripService:
                 cover_image_file, ImageType.COVER
             )
 
-        return await self.trip_repo.create_trip(trip, processed_image_name, user_id)
+        db_trip  = await self.trip_repo.create_trip(trip, processed_image_name, user_id)
+
+        return TripPrivateResponse(
+                title=db_trip.title,
+                location=db_trip.location,
+                start_date=db_trip.start_date,
+                end_date=db_trip.end_date,
+                budget=db_trip.budget,
+                is_favorite=db_trip.is_favorite,
+                id=db_trip.id,
+                user_id=db_trip.user_id,
+                cover_image_url=db_trip.cover_image_url,
+                total_spending=0
+        )
 
 
-    async def get_trips(self, user_id: int) -> list[models.Trip]:
+    async def get_trips(self, user_id: int) -> list[TripPrivateResponse]:
         trips = await self.trip_repo.get_trips(user_id)
 
         results = []
@@ -50,7 +63,7 @@ class TripService:
                 is_favorite=trip.is_favorite,
                 id=trip.id,
                 user_id=trip.user_id,
-                cover_image_url=trip.cover_image,
+                cover_image_url=trip.cover_image_url,
                 total_spending=total_spend
             ))
 
@@ -63,8 +76,8 @@ class TripService:
         trip_id: int,
         updates: TripUpdate,
         cover_image_file: UploadFile | None = None,
-    ) -> models.Trip:
-        db_trip = await self.repo.get_trip_by_id_and_user(trip_id, user_id)
+    ) -> TripPrivateResponse:
+        db_trip = await self.trip_repo.get_trip_by_id_and_user(user_id, trip_id)
 
         if not db_trip:
             raise TripError("Trip not found or not authorized.")
@@ -76,7 +89,20 @@ class TripService:
             filename = await self.media.proces_image(cover_image_file, ImageType.COVER)
             db_trip.cover_image = filename
 
-        return await self.trip_repo.save_trip(db_trip)
+        db_trip = await self.trip_repo.save_trip(db_trip)
+
+        return TripPrivateResponse(
+            title=db_trip.title,
+            location=db_trip.location,
+            start_date=db_trip.start_date,
+            end_date=db_trip.end_date,
+            budget=db_trip.budget,
+            is_favorite=db_trip.is_favorite,
+            id=db_trip.id,
+            user_id=db_trip.user_id,
+            cover_image_url=db_trip.cover_image_url,
+            total_spending=await self.expense_repo.get_total_spent(db_trip.id)
+        )
 
 
     async def delete_trip(self, user_id: int, trip_id: int) -> models.Trip:

@@ -6,7 +6,7 @@ from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database import Base
-from config import Settings
+from config import settings
 
 # ==========================================
 # CORE USERS
@@ -45,8 +45,8 @@ class User(Base):
         fully qualified static URL path for the iOS client to fetch
         """
         if self.profile_image:
-            return f"{Settings.base_url}/media/profile_images/{self.profile_image}"
-        return f"{Settings.base_url}/static/profile_image/default.png"
+            return f"{settings.base_url}/media/profile_images/{self.profile_image}"
+        return f"{settings.base_url}/static/profile_image/default.png"
 
 
 # ==========================================
@@ -97,8 +97,8 @@ class Trip(Base):
         fully qualified static URL path for the iOS client to fetch
         """
         if self.cover_image:
-            return f"{Settings.base_url}/media/cover_images/{self.cover_image}"
-        return f"{Settings.base_url}/static/cover_image/default.png"
+            return f"{settings.base_url}/media/cover_images/{self.cover_image}"
+        return f"{settings.base_url}/static/cover_image/default.png"
 
 
 class Event(Base):
@@ -147,7 +147,7 @@ class Expense(Base):
     @property
     def receipt_image_url(self) -> str | None:
         if self.receipt_image:
-            return f"{Settings.base_url}/media/documents/{self.receipt_image}"
+            return f"{settings.base_url}/media/documents/{self.receipt_image}"
         return None
 
 
