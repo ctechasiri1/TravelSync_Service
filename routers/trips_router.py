@@ -137,10 +137,10 @@ async def get_expenses(
     except UserError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
     
-@router.delete("\{trip_id}\expenses", response_model=ExpensePrivateResponse, status_code=status.HTTP_204_NO_CONTENT)
-async def delete_expense(
-    current_user: CurrentUser,
-    trip_id: int,
-    service: ExpenseService = Depends(get_exepense_service)
-):
-    pass
+# @router.delete("\{trip_id}\expenses", response_model=ExpensePrivateResponse, status_code=status.HTTP_204_NO_CONTENT)
+# async def delete_expense(
+#     current_user: CurrentUser,
+#     trip_id: int,
+#     service: ExpenseService = Depends(get_exepense_service)
+# ):
+#     pass
