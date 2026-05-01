@@ -19,8 +19,6 @@ class ExpenseRepository:
         )
 
         self.db.add(new_expense)
-        await self.db.commit()
-        await self.db.refresh(new_expense)
         return new_expense
 
     async def get_total_spent(self, trip_id: int) -> int | float:
@@ -33,12 +31,12 @@ class ExpenseRepository:
         result = await self.db.execute(query)
         return result.scalars().all()
 
-    async def delete_expense(self, trip_id: int, expense_id: int) -> str | None:
+    async def delete_expense(self, trip_id: int, expense_id: int) -> tuple[int, str] | None:
         delete_expense_query = (
             delete(models.Expense)
             .where(models.Expense.trip_id == trip_id, models.Expense.id == expense_id)
-            .returning(models.Expense.receipt_image)
+            .returning(models.Expense.id, models.Expense.receipt_image)
         )
 
         result = await self.db.execute(delete_expense_query)
-        return result.scalar_one_or_none()
+        return result.first()

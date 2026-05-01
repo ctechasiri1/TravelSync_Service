@@ -52,6 +52,7 @@ class TripService:
             )
 
         await self.db.commit()
+        await self.db.refresh(db_trip)
 
         return TripPrivateResponse(
             title=db_trip.title,
@@ -137,10 +138,13 @@ class TripService:
         )
 
     async def delete_trip(self, user_id: int, trip_id: int) -> None:
-        trip_cover_image = await self.trip_repo.delete_trip(user_id, trip_id)
+        result = await self.trip_repo.delete_trip(user_id, trip_id)
 
-        if trip_cover_image is None:
-            raise TripError("The expense was not found or doesn't belong to this user.")
+        if result is None:
+            raise TripError("The trip was not found or doesn't belong to this user.")
+        
+        deleted_id, trip_cover_image = result
 
-        await self.media_service.delete_image(trip_cover_image, ImageType.COVER)
+        if trip_cover_image:
+            await self.media_service.delete_image(trip_cover_image, ImageType.COVER)
         await self.db.commit()

@@ -43,7 +43,7 @@ async def create_trip(
 
     try:
         return await service.create_trip(trip_data, cover_image_file, current_user.id)
-    except ValueError as error:
+    except TripError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 

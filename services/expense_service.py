@@ -41,7 +41,7 @@ class ExpenseService:
                 )
             )
 
-        db_exepense = await self.repo.create_expense(
+        db_expense = await self.repo.create_expense(
             receipt_image_name=receipt_image_name, expense_data=expense_data
         )
 
@@ -51,8 +51,9 @@ class ExpenseService:
             )
 
         await self.db.commit()
+        await self.db.refresh(db_expense)
 
-        return db_exepense
+        return db_expense
 
     async def get_expenses(self, user_id: int, trip_id: int) -> list[models.Expense]:
         await self.trip_service.verify_membership(user_id, trip_id)
@@ -61,12 +62,15 @@ class ExpenseService:
     async def delete_expense(self, user_id: int, trip_id: int, expense_id: int) -> None:
         await self.trip_service.verify_membership(user_id, trip_id)
 
-        receipt_image_name = await self.repo.delete_expense(trip_id, expense_id)
+        result = await self.repo.delete_expense(trip_id, expense_id)
 
-        if receipt_image_name is None:
+        if result is None:
             raise ExpenseError(
                 "The expense was not found or doesn't belong to this trip."
             )
+        
+        expense_id, receipt_image_name = result
 
-        await self.media_service.delete_image(receipt_image_name, ImageType.RECEIPT)
+        if receipt_image_name:
+            await self.media_service.delete_image(receipt_image_name, ImageType.RECEIPT)
         await self.db.commit()
