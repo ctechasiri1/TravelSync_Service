@@ -40,24 +40,7 @@ def get_user_service(
 
 
 # ==========================================
-# EXPENSE INJECTION
-# ==========================================
-
-
-def get_expense_repository(db: AsyncSession = Depends(get_db)) -> TripRepository:
-    return ExpenseRepository(db)
-
-
-def get_exepense_service(
-    repo: ExpenseRepository = Depends(get_expense_repository),
-    user_service: UserService = Depends(get_user_service),
-    media_service: LocalMediaService = Depends(get_media_service),
-):
-    return ExpenseService(repo, user_service, media_service)
-
-
-# ==========================================
-# TRIP INJECTION
+# TRIP/EXPENSE INJECTION
 # ==========================================
 
 
@@ -65,7 +48,12 @@ def get_trip_repository(db: AsyncSession = Depends(get_db)) -> TripRepository:
     return TripRepository(db)
 
 
+def get_expense_repository(db: AsyncSession = Depends(get_db)) -> TripRepository:
+    return ExpenseRepository(db)
+
+
 def get_trip_service(
+    db: AsyncSession = Depends(get_db),
     trip_repo: TripRepository = Depends(get_trip_repository),
     expense_repo: ExpenseRepository = Depends(get_expense_repository),
     media_service: LocalMediaService = Depends(get_media_service),
@@ -73,6 +61,15 @@ def get_trip_service(
     return TripService(
         trip_repo=trip_repo, expense_repo=expense_repo, media_service=media_service
     )
+
+
+def get_expense_service(
+    db: AsyncSession = Depends(get_db),
+    repo: ExpenseRepository = Depends(get_expense_repository),
+    trip_service: TripService = Depends(get_trip_service),
+    media_service: LocalMediaService = Depends(get_media_service),
+):
+    return ExpenseService(repo, trip_service, media_service)
 
 
 # ==========================================

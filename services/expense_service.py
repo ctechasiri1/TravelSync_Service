@@ -1,52 +1,72 @@
 from fastapi import UploadFile
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import models
 from repositories.expense_repository import ExpenseRepository
 from schemas import ExpenseCreate
 from services.local_media_service import ImageType, LocalMediaService
-from services.user_service import UserService
-from exceptions import UserError, ExpenseError
+from services.trip_service import TripService
+from exceptions import ExpenseError
 
 
 class ExpenseService:
-    def __init__(self, repo: ExpenseRepository, user_service: UserService, media_service: LocalMediaService):
+    def __init__(
+        self,
+        db: AsyncSession,
+        repo: ExpenseRepository,
+        trip_service: TripService,
+        media_service: LocalMediaService,
+    ):
+        self.db = db
         self.repo = repo
-        self.user_service = user_service
+        self.trip_service = trip_service
         self.media_service = media_service
 
     async def create_expense(
         self,
+        user_id: int,
         trip_id: int,
         receipt_image_file: UploadFile | None,
         expense_data: ExpenseCreate,
     ) -> models.Expense:
-        processed_image = None
+        await self.trip_service.verify_membership(user_id, trip_id)
+
+        receipt_image_name = None
+        optimized_bytes = None
 
         if receipt_image_file:
-            processed_image = await self.media_service.proces_image(
-                receipt_image_file, ImageType.RECEIPT
+            receipt_image_name, optimized_bytes = (
+                await self.media_service.process_image(
+                    receipt_image_file, ImageType.RECEIPT
+                )
             )
 
-        return await self.repo.create_expense(
-            trip_id=trip_id, receipt_image=processed_image, expense_data=expense_data
+        db_exepense = await self.repo.create_expense(
+            receipt_image_name=receipt_image_name, expense_data=expense_data
         )
-    
-    async def get_expenses(
-        self, 
-        user_id: int, 
-        trip_id: int
-    ) -> models.Expense:
-        db_user =  await self.user_service.valid_user(user_id)
 
-        if not db_user:
-            raise UserError("The user is not authorized.")
-        
+        if receipt_image_name and optimized_bytes:
+            await self.media_service.save_image_to_disk(
+                receipt_image_name, optimized_bytes, ImageType.RECEIPT
+            )
+
+        await self.db.commit()
+
+        return db_exepense
+
+    async def get_expenses(self, user_id: int, trip_id: int) -> list[models.Expense]:
+        await self.trip_service.verify_membership(user_id, trip_id)
         return await self.repo.get_expenses(trip_id)
 
-    async def delete_expense(self, trip_id: int, expense_id: int) -> models.Expense:
-        db_expense = await self.repo.get_expense(trip_id, expense_id)
+    async def delete_expense(self, user_id: int, trip_id: int, expense_id: int) -> None:
+        await self.trip_service.verify_membership(user_id, trip_id)
 
-        if not db_expense:
-            raise ExpenseError("This expense doesn't exist in this trip.")
+        receipt_image_name = await self.repo.delete_expense(trip_id, expense_id)
 
-        return await self.repo.delete_expense(db_expense)
+        if receipt_image_name is None:
+            raise ExpenseError(
+                "The expense was not found or doesn't belong to this trip."
+            )
+
+        await self.media_service.delete_image(receipt_image_name, ImageType.RECEIPT)
+        await self.db.commit()

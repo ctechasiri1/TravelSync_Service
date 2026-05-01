@@ -54,40 +54,42 @@ class LocalMediaService:
 
     # --- PUBLIC ASYNC METHODS (Called by your Trip/Expense Services) ---
 
-    async def proces_image(self, file: UploadFile, image_type: ImageType) -> str:
-        """Processes and saves an image asynchronously."""
+    async def process_image(
+        self, file: UploadFile, image_type: ImageType
+    ) -> tuple[str, bytes]:
         raw_bytes = await file.read()
         return await run_in_threadpool(self._sync_process_image, raw_bytes, image_type)
 
-    async def process_document(
-        self, file: UploadFile, document_type: DocumentType
+    async def save_image_to_disk(
+        self, filename: str, content: bytes, image_type: ImageType
     ) -> str:
-        raw_bytes = await file.read()
-        original_filename = file.filename or ""
-
         return await run_in_threadpool(
-            self._sync_process_document, original_filename, raw_bytes, document_type
+            self._sync_save_image_to_disk, filename, content, image_type
         )
 
-    async def delete_file(
+    async def delete_image(
         self, filename: str | None, media_type: ImageType | DocumentType
     ) -> None:
         if not filename:
             return
 
-        await run_in_threadpool(self._sync_delete_file, filename, media_type)
+        await run_in_threadpool(self._sync_delete_image, filename, media_type)
 
     # --- PRIVATE SYNCHRONOUS METHODS (The heavy lifting) ---
 
-    def _sync_process_image(self, content: bytes, image_type: ImageType) -> str:
+    def _sync_process_image(
+        self, content: bytes, image_type: ImageType
+    ) -> tuple[str, bytes]:
         """
-        Processes a raw image upload for secure storage and optimized delivery.
-        Returns the generated UUID filename (e.g. 'a1b2c3d4.jpg') to saved in the database.
+        Processes the image entirely in RAM. Does NOT touch the hard drive.
+        Returns a tuple containing the generated filename and the optimized bytes.
         """
+        filename = f"{uuid.uuid4().hex}.jpg"
+
         # 1. Read the raw bytes into a Pillow Image object
-        with Image.open(BytesIO(content)) as original:
+        with Image.open(BytesIO(content)) as img:
             # 2. Correct EXIF orientation (prevents mobile uploads from rotating sideways)
-            img = ImageOps.exif_transpose(original)
+            img = ImageOps.exif_transpose(img)
 
             # 3. Crop and resize the image to the strict dimensions of the ImageType
             img = ImageOps.fit(img, image_type.size, method=Image.Resampling.LANCZOS)
@@ -96,46 +98,27 @@ class LocalMediaService:
             if img.mode in ("RGBA", "LA", "P"):
                 img = img.convert("RGB")
 
-            # 5. Generate a mathematically safe UUID filename to prevent directory traversal
-            filename = f"{uuid.uuid4().hex}.jpg"
-            filepath = image_type.dir_path / filename
+            output_buffer = BytesIO()
+            img.save(output_buffer, format="JPEG", quality=85)
+            optimized_bytes = output_buffer.getvalue()
 
-            # 6. Ensure the target media directory actually exists
-            image_type.dir_path.mkdir(parents=True, exist_ok=True)
+        return filename, optimized_bytes
 
-            # 7. Save the optimized JPEG directly to the hard drive
-            img.save(filepath, "JPEG", quality=85, optimize=True)
-
-        return filename
-
-    def _sync_process_document(
-        self, content: bytes, original_filename: str, doc_type: DocumentType
+    def _sync_save_image_to_disk(
+        self, filename: str, content: bytes, image_type: ImageType
     ) -> str:
-        """
-        Securely saves a raw document (like a PDF) to the server.
-        Extracts the original extension, generates a safe UUID filename, and writes the bytes.
-        """
-        # 1. Extract the extension (e.g., 'pdf') and make it lowercase
-        ext = Path(original_filename).suffix.lower()
+        # 5. Generate a mathematically safe UUID filename to prevent directory traversal
+        filepath = image_type.dir_path / filename
 
-        # 2. Security Check: Block unsupported files
-        if ext not in ALLOW_DOCUMENT_EXTENSIONS:
-            raise ValueError(f"Unsupported file type: {ext}")
+        # 6. Ensure the target media directory actually exists
+        image_type.dir_path.mkdir(parents=True, exist_ok=True)
 
-        # 3. Generate a mathematically safe filename
-        filename = f"{uuid.uuid4().hex}{ext}"
-        filepath = doc_type.dir_path / filename
-
-        # 4. Ensure the media/document directory actually exists
-        doc_type.dir_path.mkdir(parents=True, exist_ok=True)
-
-        # 5. Write the raw bytes directly to the hard drive
-        with open(filepath, "wb") as f:
-            f.write(content)
+        # 7. Save the optimized JPEG directly to the hard drive
+        filepath.write_bytes(content)
 
         return filename
 
-    def _sync_delete_file(
+    def _sync_delete_image(
         self, filename: str, image_type: ImageType | DocumentType
     ) -> None:
         """

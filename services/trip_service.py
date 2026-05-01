@@ -1,6 +1,6 @@
 from fastapi import UploadFile
+from sqlalchemy.ext.asyncio import AsyncSession
 
-import models
 from exceptions import TripError
 from repositories.trip_repository import TripRepository
 from repositories.expense_repository import ExpenseRepository
@@ -13,25 +13,45 @@ class TripService:
 
     def __init__(
         self,
+        db: AsyncSession,
         trip_repo: TripRepository,
         expense_repo: ExpenseRepository,
         media_service: LocalMediaService,
     ):
+        self.db = db
         self.trip_repo = trip_repo
         self.expense_repo = expense_repo
         self.media_service = media_service
 
+    async def verify_membership(self, user_id: int, trip_id: int) -> None:
+        db_trip = await self.trip_repo.get_trip_by_id_and_user(user_id, trip_id)
+
+        if not db_trip:
+            raise TripError("Trip not found or not authorized.")
+
     async def create_trip(
         self, trip: TripCreate, cover_image_file: UploadFile | None, user_id: int
     ) -> TripPrivateResponse:
-        processed_image_name = None
+        cover_image_name = None
+        optimized_bytes = None
 
         if cover_image_file:
-            processed_image_name = await self.media_service.proces_image(
+            cover_image_name, optimized_bytes = await self.media_service.process_image(
                 cover_image_file, ImageType.COVER
             )
 
-        db_trip = await self.trip_repo.create_trip(trip, processed_image_name, user_id)
+        db_trip = await self.trip_repo.create_trip(
+            trip_data=trip, cover_image_name=cover_image_name, user_id=user_id
+        )
+
+        if cover_image_name and optimized_bytes:
+            await self.media_service.save_image_to_disk(
+                filename=cover_image_name,
+                content=optimized_bytes,
+                image_type=ImageType.COVER,
+            )
+
+        await self.db.commit()
 
         return TripPrivateResponse(
             title=db_trip.title,
@@ -84,11 +104,24 @@ class TripService:
         for field, value in updates.model_dump(exclude_none=True).items():
             setattr(db_trip, field, value)
 
-        if cover_image_file:
-            filename = await self.media.proces_image(cover_image_file, ImageType.COVER)
-            db_trip.cover_image = filename
+        old_cover_image_name = db_trip.cover_image
+        updated_cover_image_name = None
+        optimized_bytes = None
 
-        db_trip = await self.trip_repo.save_trip(db_trip)
+        if cover_image_file:
+            updated_cover_image_name, optimized_bytes = await self.media_service.process_image(
+                cover_image_file, ImageType.COVER
+            )
+            db_trip.cover_image = updated_cover_image_name
+
+        if updated_cover_image_name and optimized_bytes:
+            await self.media_service.save_image_to_disk(
+                updated_cover_image_name, optimized_bytes, ImageType.COVER
+            )
+
+        await self.db.commit()
+        await self.db.refresh(db_trip)
+        await self.media_service.delete_image(old_cover_image_name, ImageType.COVER)
 
         return TripPrivateResponse(
             title=db_trip.title,
@@ -103,16 +136,11 @@ class TripService:
             total_spending=await self.expense_repo.get_total_spent(db_trip.id),
         )
 
-    async def delete_trip(self, user_id: int, trip_id: int) -> models.Trip:
-        db_trip = await self.trip_repo.get_trip_by_id_and_user(user_id, trip_id)
+    async def delete_trip(self, user_id: int, trip_id: int) -> None:
+        trip_cover_image = await self.trip_repo.delete_trip(user_id, trip_id)
 
-        if not db_trip:
-            raise TripError("Trip not found or not authorized.")
+        if trip_cover_image is None:
+            raise TripError("The expense was not found or doesn't belong to this user.")
 
-        return await self.trip_repo.delete_trip(db_trip)
-
-    async def verify_membership(self, user_id: int, trip_id: int) -> None:
-        db_trip = await self.trip_repo.get_trip_by_id_and_user(user_id, trip_id)
-
-        if not db_trip:
-            raise TripError("Trip not found or not authorized.")
+        await self.media_service.delete_image(trip_cover_image, ImageType.COVER)
+        await self.db.commit()
