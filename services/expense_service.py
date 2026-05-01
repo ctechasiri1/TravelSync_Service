@@ -5,7 +5,7 @@ from repositories.expense_repository import ExpenseRepository
 from schemas import ExpenseCreate
 from services.local_media_service import ImageType, LocalMediaService
 from services.user_service import UserService
-from exceptions import UserError
+from exceptions import UserError, ExpenseError
 
 
 class ExpenseService:
@@ -42,7 +42,11 @@ class ExpenseService:
             raise UserError("The user is not authorized.")
         
         return await self.repo.get_expenses(trip_id)
-    
 
-    async def delete_expense(user_id: int, trip_id: int) -> models.Expense:
-        pass
+    async def delete_expense(self, trip_id: int, expense_id: int) -> models.Expense:
+        db_expense = await self.repo.get_expense(trip_id, expense_id)
+
+        if not db_expense:
+            raise ExpenseError("This expense doesn't exist in this trip.")
+
+        return await self.repo.delete_expense(db_expense)

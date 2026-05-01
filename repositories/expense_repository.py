@@ -22,12 +22,12 @@ class ExpenseRepository:
         return await self.save_expense(new_expense)
 
     async def get_total_spent(self, trip_id: int) -> models.Expense:
-        result = await self.db.execute(
-            select(func.sum(models.Expense.amount)).where(models.Trip.id == trip_id)
-        )
+        query = select(func.sum(models.Expense.amount)).where(models.Trip.id == trip_id)
+        
+        result = await self.db.execute(query)
 
         return result.scalar() or 0
-    
+
     async def get_expenses(self, trip_id) -> models.Expense:
         query = select(models.Expense).where(models.Expense.trip_id == trip_id)
 
@@ -39,3 +39,14 @@ class ExpenseRepository:
         await self.db.commit()
         await self.db.refresh(db_expense)
         return db_expense
+    
+    async def get_expense(self, trip_id: int, expense_id: int) -> models.Expense:
+        query = select(models.Expense).where(models.Expense.trip_id == trip_id, models.Expense.id == expense_id)
+
+        result = self.db.execute(query)
+
+        return result.scalar() or None
+    
+    async def delete_expense(self, db_expense: models.Expense):
+        await self.db.delete(db_expense)
+        await self.db.commit()
