@@ -58,9 +58,7 @@ def get_trip_service(
     expense_repo: ExpenseRepository = Depends(get_expense_repository),
     media_service: LocalMediaService = Depends(get_media_service),
 ) -> TripService:
-    return TripService(
-        trip_repo=trip_repo, expense_repo=expense_repo, media_service=media_service
-    )
+    return TripService(db, trip_repo, expense_repo, media_service)
 
 
 def get_expense_service(
@@ -69,7 +67,7 @@ def get_expense_service(
     trip_service: TripService = Depends(get_trip_service),
     media_service: LocalMediaService = Depends(get_media_service),
 ):
-    return ExpenseService(repo, trip_service, media_service)
+    return ExpenseService(db, repo, trip_service, media_service)
 
 
 # ==========================================
