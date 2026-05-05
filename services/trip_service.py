@@ -122,7 +122,9 @@ class TripService:
 
         await self.db.commit()
         await self.db.refresh(db_trip)
-        await self.media_service.delete_image(old_cover_image_name, ImageType.COVER)
+
+        if updated_cover_image_name and optimized_bytes:
+            await self.media_service.delete_image(old_cover_image_name, ImageType.COVER)
 
         return TripPrivateResponse(
             title=db_trip.title,

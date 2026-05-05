@@ -57,13 +57,13 @@ async def get_trips(
 
 
 @router.patch(
-    "/{trip_id}", response_model=TripPrivateResponse, status_code=status.HTTP_200_OK
+    "/{trip_id}", status_code=status.HTTP_204_NO_CONTENT
 )
 async def update_trip(
     current_user: CurrentUser,
     trip_id: int,
     is_favorite: bool | None = Form(None),
-    cover_image_file: UploadFile | None = Form(None),
+    cover_image_file: UploadFile | None = File(None),
     service: TripService = Depends(get_trip_service),
 ):
     updated_trip = TripUpdate(is_favorite=is_favorite)
