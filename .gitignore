@@ -11,3 +11,4 @@ wheels/
 
 ### dotenv ###
 .env
+*.jpg
