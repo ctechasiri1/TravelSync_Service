@@ -56,6 +56,14 @@ async def get_trips(
     return await service.get_trips(current_user.id)
 
 
+@router.get(
+        "/{trip_id}", response_model=TripPrivateResponse, status_code=status.HTTP_200_OK
+)
+async def get_trip(
+    current_user: CurrentUser, trip_id: int, service: TripService = Depends(get_trip_service)
+):
+    return await service.get_trip(trip_id)
+
 @router.patch(
     "/{trip_id}", status_code=status.HTTP_204_NO_CONTENT
 )

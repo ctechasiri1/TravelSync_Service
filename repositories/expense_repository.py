@@ -22,7 +22,7 @@ class ExpenseRepository:
         return new_expense
 
     async def get_total_spent(self, trip_id: int) -> int | float:
-        query = select(func.sum(models.Expense.amount)).where(models.Trip.id == trip_id)
+        query = select(func.sum(models.Expense.amount)).where(models.Expense.trip_id == trip_id)
         result = await self.db.execute(query)
         return result.scalar() or 0
 

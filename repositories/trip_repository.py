@@ -25,6 +25,11 @@ class TripRepository:
         query = select(models.Trip).where(models.Trip.user_id == user_id)
         result = await self.db.execute(query)
         return list(result.scalars().all())
+    
+    async def get_trip(self, trip_id: int) -> models.Trip:
+        query = select(models.Trip).where(models.Trip.id == trip_id)
+        result = await self.db.execute(query)
+        return result.scalar_one_or_none()
 
     async def get_trip_by_id_and_user(self, user_id: int, trip_id: int) -> models.Trip | None:
         query = select(models.Trip).where(

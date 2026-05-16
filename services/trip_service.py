@@ -89,6 +89,25 @@ class TripService:
             )
 
         return results
+    
+    async def get_trip(self, trip_id: int) -> TripPrivateResponse:
+        trip = await self.trip_repo.get_trip(trip_id)
+        total_spend = await self.expense_repo.get_total_spent(trip_id)
+        
+        return TripPrivateResponse(
+            title=trip.title,
+            location=trip.location,
+            start_date=trip.start_date,
+            end_date=trip.end_date,
+            budget=trip.budget,
+            is_favorite=trip.is_favorite,
+            id=trip.id,
+            user_id=trip.user_id,
+            cover_image_url=trip.cover_image_url,
+            total_spending=total_spend,
+        )
+
+
 
     async def update_trip(
         self,
