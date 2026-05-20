@@ -57,7 +57,7 @@ async def get_trips(
 
 
 @router.get(
-        "/{trip_id}", response_model=TripPrivateResponse, status_code=status.HTTP_200_OK
+        "/ 24982{trip_id}", response_model=TripPrivateResponse, status_code=status.HTTP_200_OK
 )
 async def get_trip(
     current_user: CurrentUser, trip_id: int, service: TripService = Depends(get_trip_service)
