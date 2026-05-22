@@ -57,6 +57,8 @@ class TripService:
         return TripPrivateResponse(
             title=db_trip.title,
             location=db_trip.location,
+            longitude=db_trip.longitude,
+            latitude=db_trip.latitude,
             start_date=db_trip.start_date,
             end_date=db_trip.end_date,
             budget=db_trip.budget,
@@ -77,6 +79,8 @@ class TripService:
                 TripPrivateResponse(
                     title=trip.title,
                     location=trip.location,
+                    longitude=trip.longitude,
+                    latitude=trip.latitude,
                     start_date=trip.start_date,
                     end_date=trip.end_date,
                     budget=trip.budget,
@@ -97,6 +101,8 @@ class TripService:
         return TripPrivateResponse(
             title=trip.title,
             location=trip.location,
+            longitude=trip.longitude,
+            latitude=trip.latitude,
             start_date=trip.start_date,
             end_date=trip.end_date,
             budget=trip.budget,
@@ -106,8 +112,6 @@ class TripService:
             cover_image_url=trip.cover_image_url,
             total_spending=total_spend,
         )
-
-
 
     async def update_trip(
         self,
@@ -148,6 +152,8 @@ class TripService:
         return TripPrivateResponse(
             title=db_trip.title,
             location=db_trip.location,
+            longitude=db_trip.longitude,
+            latitude=db_trip.latitude,
             start_date=db_trip.start_date,
             end_date=db_trip.end_date,
             budget=db_trip.budget,
@@ -164,7 +170,7 @@ class TripService:
         if result is None:
             raise TripError("The trip was not found or doesn't belong to this user.")
         
-        deleted_id, trip_cover_image = result
+        _, trip_cover_image = result
 
         if trip_cover_image:
             await self.media_service.delete_image(trip_cover_image, ImageType.COVER)

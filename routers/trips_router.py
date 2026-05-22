@@ -25,6 +25,8 @@ async def create_trip(
     current_user: CurrentUser,
     title: str = Form(...),
     location: str = Form(...),
+    longitude: float = Form(...),
+    latitude: float = Form(...),
     start_date: datetime = Form(...),
     end_date: datetime = Form(...),
     budget: int = Form(...),
@@ -35,6 +37,8 @@ async def create_trip(
     trip_data = TripCreate(
         title=title,
         location=location,
+        longitude=longitude,
+        latitude=latitude,
         start_date=start_date,
         end_date=end_date,
         budget=budget,
@@ -57,7 +61,7 @@ async def get_trips(
 
 
 @router.get(
-        "/ 24982{trip_id}", response_model=TripPrivateResponse, status_code=status.HTTP_200_OK
+        "/{trip_id}", response_model=TripPrivateResponse, status_code=status.HTTP_200_OK
 )
 async def get_trip(
     current_user: CurrentUser, trip_id: int, service: TripService = Depends(get_trip_service)

@@ -72,6 +72,8 @@ class TripBase(BaseModel):
 
     title: str = Field(min_length=1, max_length=200)
     location: str = Field(min_length=1, max_length=200)
+    longitude: float
+    latitude: float
     start_date: datetime
     end_date: datetime
     budget: int
