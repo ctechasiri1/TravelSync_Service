@@ -11,4 +11,5 @@ wheels/
 
 ### dotenv ###
 .env
-*.jpg
+media/
+travelsync.db
