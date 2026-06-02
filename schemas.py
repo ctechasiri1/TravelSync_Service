@@ -121,3 +121,18 @@ class ExpensePrivateResponse(ExpenseBase):
     id: int
     trip_id: int
     receipt_image_url: str | None = None
+
+
+# ==========================================
+# DOMAIN: EXPENSE
+# ==========================================
+
+
+class EventBase(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    location: str = Field(ge=1)
+    longitude: float 
+    latitude: float
+    date: datetime
+    start_time: datetime
+    end_time: datetime
